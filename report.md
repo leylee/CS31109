@@ -1,4 +1,4 @@
-$\newcommand{o}{\overline} \newcommand{S}{\mathcal{S}} \newcommand{l}{\mathcal{l}}$
+$\newcommand{o}{\overline} \newcommand{S}{\mathcal{S}} \newcommand{l}{\mathcal{l}} \newcommand{H}{\mathcal{H}} \newcommand{lognc}{\log_2(n/c)}$
 
 # 1 论文题目
 
@@ -78,7 +78,7 @@ Adaptive ShiversSort 是一个 $3$-aware 算法, 该算法是稳定排序且拥�
 
 在随后的部分中, 我们大多数考虑 $c$ 的两种取值: $c = 1$ 或 $c = n + 1$, 其中 $n$ 是待排序数组的长度. 我们将选择这两个参数获得的算法分别称为 1-adaptive ShiversSort 和 length-adaptive ShiversSort. 除了在第 2.4 节专门提及 length-adaptive ShiversSort 的时候, 读者都可以假定 $c=1$.
 
-该算法基于发现单调的 run 并维护存储这些 run 的堆栈, 这些堆栈可以根据是否情况 $\#1$ 至情况 $\#4$ 来进行合并或压入新的 run. 特别地, 因为这些条件只涉及到 $\mathcal l_1$, $\mathcal l_2$ 和 $\mathcal l_3$, 且只有 $R_1$, $R_2$, 和 $R_3$ 可能被合并, 所以如果 $c$ 的取值与输入无关, 这个算法就属于 $3$-aware 稳定排序算法.
+该算法基于发现单调的 run 并维护存储这些 run 的堆栈, 这些堆栈可以根据是否情况 #1 至情况 #4 来进行合并或压入新的 run. 特别地, 因为这些条件只涉及到 $\mathcal l_1$, $\mathcal l_2$ 和 $\mathcal l_3$, 且只有 $R_1$, $R_2$, 和 $R_3$ 可能被合并, 所以如果 $c$ 的取值与输入无关, 这个算法就属于 $3$-aware 稳定排序算法.
 
 ```text
 Algorighm 1: Adaptive ShiversSort
@@ -130,7 +130,48 @@ _证明:_ 利用数学归纳法. 首先, 当 $h \le 2$ 时, 无需证明: 这仅
 接下来我们证明如果 $\mathcal S = (R_1, \dots, R_h)$ 满足 $(1)$, 且合并或压栈操作之后新的栈为 $\overline {\mathcal S} = (\overline R_1, \dots, \overline R_{\overline h})$, 则 $\overline {\mathcal S}$ 仍满足 $(1)$. 这可以通过分情况讨论证明:
 
 - 如果两个 run 被刚刚合并, 则当 $i \ge 3$ 时, 有 $\overline h = h - 1$, $\overline R_i = R_{i+1}$, 且 $\overline R_2 = R_3$ (如果 $R_1$ 和 $R_2$ 合并) 或 $\overline R_2$ 是 $R_2$ 和 $R_3$ 合并的结果. 由于引理 3.3, 可得 $\overline {\mathcal l}_2 = \mathcal l_3$ 或 $\overline{\mathcal l}_2 \le \max\{\mathcal l_2, \mathcal l_3\} + 1 = \mathcal l_3 + 1$. 又因为在 $\mathcal S$ 中 $(1)$ 成立, 所以有 $\mathcal l_3 \le \overline{\mathcal l}_3 \le \overline{\mathcal l}_4 \le \dots \le \overline{\mathcal l}_{\overline h}$, 所以 $\overline{\mathcal l}_2 \le \mathcal l_3 + 1 \le \overline{\mathcal l}_3$, 得出 $(1)$ 在 $\overline{\mathcal S}$ 中也成立.
-- 如果 $\overline R_1$ 是刚刚压入的 run, 则对于 $i \ge 2$, 有 $\o h = h + 1$, 且 $\o R_i = R_{i-1}$. 
+- 如果 $\overline R_1$ 是刚刚压入的 run, 则对于 $i \ge 2$, 有 $\overline h = h + 1$, 且 $\overline R_i = R_{i-1}$. 因为 $\S$ 满足 $(1)$, 所以有 $\o\l_4 \lt \o\l_5 \lt \dots \lt \o\l_{\o h}$. 而且因为满足了情况 #4, 所以情况 #1 和 #3 都不满足, 所以 $\l_1 \lt \l_2 \lt \l_3$ 也就是 $\o\l_2 \lt \o\l_3\lt\o\l_4$, 故 $\o\S$ 也满足 $(1)$.
+
+粗略的讲, 引理 3.4 说明了存储在栈中的 run 的长度以指数增长, 除了刚刚压入栈顶的元素长度是无法控制的.
+
+接下来, 定理 3.2 的证明要点在于对算法执行的合并的总成本进行仔细的估计. 直观地讲, 该证明可以看作是对成本的分配, 其中两个 run $R$ 和 $R'$ 的合并成本需要由一些 run 承担 (包括 $R$, $R'$ 或其他的 run). 对于我们的证明来说, 如果把一次合并的所有成本都分给一个 run, 未免有点太粗糙. 因此, 我们把每一次合并产生的成本分为两半, 分别由不同的 run 来承担, 这样会更方便一些.
+
+因此, 接下来我们将 $R$ 和 $R'$ 之间的合并人为地分为两个单独的合并操作: 一部分成本 $r$ 叫做 $R$ 对 $R'$ 合并的成本, 另一部分成本 $r'$ 叫做 $R'$ 对 $R$ 合并的成本.加起来, 合并 $R$ 和 $R'$ 的成本是 $r + r'$.
+
+然后, 如果 R 和 R' 合并成更大的 R'' 时, $\l'' \ge \l + 1$, 那没就称 R 的合并是膨胀合并, 反之称作非膨胀合并. 注意, 如果 $\l \le \l'$, 则 $R$ 对 $R'$ 的合并一定是膨胀合并; 因此, 如果 $\l = \l'$, 则 R 和 R' 的合并都是膨胀合并, 在这种情况下称 R 和 R' 的合并是完全膨胀合并.
+
+> _引理 3.5._ 膨胀合并所需的开销最多是 $n(\H - \{\log_2(n/c)\}) + \Lambda$, 其中 $\Lambda = \sum_{i=1}^\rho r_i\lambda_i$.
+
+_证明:_ 算法运行时, 一个原始长度为 $r$ 的 run $R$ 中的每一个元素最多参与的膨胀合并次数等于
+
+$$
+\begin{aligned}
+\lfloor\lognc\rfloor - \l &= (\lognc - \{\lognc\}) - (\log_2(r/c) - \lambda) \\
+&= \log_2(n/r) + \lambda - \{\lognc\}
+\end{aligned}
+$$
+
+所以, 如果数组最初被分成 $r_1,\dots,r_\rho$, 总的膨胀合并开销最大等于
+
+$$
+\sum_{i=1}^\rho r_i(\log_w(n/r_i) + \lambda_i - \{\lognc\}) = n(\H-\{\lognc\}) + \Lambda
+$$
+
+我们还需要证明非膨胀合并的总开销不多于 $3n - \Lambda - \rho$. 这需要根据触发这些合并的情况进一步拆分合并序列. 为了方便讨论, 我们将 #k 导致的更新称为 #k 更新, #k 导致的合并称为 #k 合并, #4 导致的压栈称为 #4 压栈. 下面证明了这些更新并不是随机排列的.
+
+> _引理 3.6._ #2 合并后不会紧跟着 #1 合并, #3 合并后不会紧跟 #1 或 #2 合并.
+
+*证明:* 设 $m$ 为一次合并. 合并前的栈是 $\mathcal S = (R_1, \dots, R_h)$, 合并后的栈是 $\overline {\mathcal S} = (\overline R_1, \dots, \overline R_{\overline h})$, 则 $\o h = h - 1$. 如果 $m$ 是 #2 合并, 则 $H \ge 3$, $\o R_1 = R_1$ 且 $\o R_3 = R_4$. 因为 #1 没有满足, 所以 $\l_3 > \l_1$. 由 $(1)$, $\o\l_3 = \l4\gt\l_3\gt\l_1=\o\l_1$, 因此不可能紧跟一个 #1 合并.
+
+类似地, 如果 $m$ 是一个 #3 合并, 若要使后面紧跟一个 #1 合并或 #2 合并, 则必有 $\o h \ge 3$. 在这种情况下, $h \ge 4$, $\o R_2 - R_3$, $\o R_3 = R_4$, 且 $\o R_1$ 是 $R_1$ 和 $R_2$ 合并的结果. 另外, 因为没有执行 #1 合并或 #2 合并, 所以 $\l_3 \gt \max\{\l_1, \l_2\}$. 根据引理 3.3, $\o\l_1 \le \max\{\l_1, \l_2\} + 1 \le \l_3$. 因此, 由 $(1)$ 得
+$$
+\o\l_3 = \l_4 \gt \l_3 = \o\l_2 \gt \o\l_1, \tag 2
+$$
+这说明 $m$ 后不可能紧跟 #1 合并或 #2 合并. 
+
+引理 3.6 产生的结果是,  
+
+
 
 ## 2.4 实验结论
 
